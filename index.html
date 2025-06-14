@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gom Xu - Nhiệm Vụ</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="//libtl.com/sdk.js" data-zone="9063710" data-sdk="show_9063710"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; color: #333; }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+
+    .wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+    .content { flex: 1; max-width: 500px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; }
+    header { padding: 1.5rem; background: linear-gradient(135deg, #ff7043, #ffab91); color: #fff; text-align: center; }
+    header h1 { font-size: 1.5rem; }
+
+    .task-section { padding: 1.5rem; }
+    .task-list { margin-top: 1rem; }
+    .task-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #eee; }
+    .task-info { display: flex; flex-direction: column; }
+    .task-title { font-weight: 600; font-size: 1.1rem; }
+    .task-reward { font-size: 0.9rem; color: #777; margin-top: 0.25rem; }
+    .task-button { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: background 0.3s; }
+    .task-button.start { background: #29b6f6; color: #fff; }
+    .task-button.start:hover { background: #03a9f4; }
+
+    .bottom-nav { position: sticky; bottom: 0; background: #fff; display: flex; justify-content: space-around; border-top: 1px solid #eee; padding: 0.75rem 0; }
+    .nav-item { flex: 1; text-align: center; color: #777; font-size: 0.85rem; }
+    .nav-item.active, .nav-item:hover { color: #ff7043; }
+    .nav-icon { width: 24px; height: 24px; margin-bottom: 0.25rem; }
+
+    .toast { position: fixed; bottom: 20%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 0.75rem 1rem; border-radius: 6px; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
+    .toast.show { opacity: 1; visibility: visible; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="content">
+      <header>
+        <h1>Danh sách nhiệm vụ</h1>
+      </header>
+      <section class="task-section">
+        <ul id="taskList" class="task-list"></ul>
+      </section>
+    </div>
+    <nav class="bottom-nav">
+      <div id="mining" class="nav-item active">
+        <img src="./img/home.svg" alt="Home" class="nav-icon" />
+        Home
+      </div>
+      <div id="taskPage" class="nav-item">
+        <img src="./img/tasks.svg" alt="Tasks" class="nav-icon" />
+        Nhiệm Vụ
+      </div>
+      <div id="invite" class="nav-item">
+        <img src="./img/invite.svg" alt="Invite" class="nav-icon" />
+        Mời
+      </div>
+      <div id="withdraw" class="nav-item">
+        <img src="./img/withdraw.svg" alt="Withdraw" class="nav-icon" />
+        Rút Tiền
+      </div>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const userNtkdz = new URLSearchParams(window.location.search).get('ntkdz') || '123-abc123';
+    const userId = parseInt(userNtkdz.split('-')[0]) || 123;
+
+    let processing = false;
+    const allTasks = [{ id: 'video', title: 'Xem Video', energy: 500, type: 'viewAds' }];
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    async function handleViewAds() {
+      if (processing) return;
+      processing = true;
+      const btn = document.getElementById('btn-video');
+      btn.textContent = 'Đang tải...';
+      try {
+        await show_9063710();
+        showToast('Bạn vừa xem quảng cáo +500 Năng Lượng!');
+        btn.textContent = 'Xem Video';
+      } catch (e) {
+        console.error(e);
+        showToast('Lỗi khi xử lý quảng cáo');
+        btn.textContent = 'Xem Video';
+      } finally {
+        processing = false;
+      }
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      allTasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'task-item';
+        li.innerHTML = `
+          <div class='task-info'>
+            <span class='task-title'>${task.title}</span>
+            <span class='task-reward'>+${task.energy} Năng Lượng</span>
+          </div>
+          <button id='btn-${task.id}' class='task-button start'>Xem Video</button>
+        `;
+        list.appendChild(li);
+        document.getElementById(`btn-${task.id}`).onclick = handleViewAds;
+      });
+    }
+
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.onclick = () => {
+        const pages = { mining:'trangchu.php', taskPage:'task.php', invite:'invite.php', withdraw:'ruttien.php' };
+        if (pages[el.id]) location.href = `${pages[el.id]}?ntkdz=${userNtkdz}`;
+      };
+    });
+
+    // Initialize
+    renderTasks();
+  </script>
+</body>
+</html>
